@@ -48,7 +48,8 @@ class cam_controller(object):
 		cap.release()
 
 		# Initialize shared memory storages
-		self.shared_img = multiprocessing.Array('B', pickle.dumps(image))
+		manager = multiprocessing.Manager()
+		self.shared_img = manager.list()
 		self.shared_img[:] = pickle.dumps(image)
 		self.terminate_condition = terminate_process
 		self.internal_run = multiprocessing.Value('i')
@@ -78,9 +79,8 @@ class cam_controller(object):
 			return
 
 		self.internal_run.value = 0
+		self.process_refference.terminate()
 		self.process_refference.join(5)
-		if self.process_refference.is_alive():
-			self.process_refference.kill()
 		self.process_refference.close()
 		self.process_refference = None
 
