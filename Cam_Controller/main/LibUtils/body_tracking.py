@@ -29,6 +29,9 @@ class body_tracking(object):
 		self.tracking['Frame_Num'] = int(0)
 		self.tracking['Landmarks'] = [[float(0), float(0), float(0), float(0), float(0)] for i in range(33)]
 
+	def get_body_tracking(self):
+		return self.tracking
+
 	def update_detection(self, result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
 		if len(result.pose_world_landmarks) == 0:
 			return
