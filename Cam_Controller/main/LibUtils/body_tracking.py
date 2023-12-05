@@ -10,13 +10,10 @@ PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 PoseLandmarkerResult = mp.tasks.vision.PoseLandmarkerResult
 VisionRunningMode = mp.tasks.vision.RunningMode
 
-import traceback
-
 class body_tracking(object):
 	cam_shm = None
 	terminate_cond = None
 	process_refference = None
-	landmark_detections = None
 	tracking = None
 	model_path = 'MediaPipeUtil/pose_landmarker_heavy.task'
 
@@ -37,14 +34,13 @@ class body_tracking(object):
 			return
 
 		landmark_detections = []
+		#for i in range(len(result.pose_landmarks[0])):
 		for i in range(len(result.pose_world_landmarks[0])):
 			l = result.pose_world_landmarks[0][i]
 			landmark_detections.append([l.x, l.y, l.z, l.visibility, l.presence])
 
 		self.tracking['Landmarks'] = landmark_detections
 		self.tracking['Frame_Num'] = timestamp_ms
-
-		print(f'{timestamp_ms}')
 
 	def body_tracking_subprocess(self):
 		options = PoseLandmarkerOptions(

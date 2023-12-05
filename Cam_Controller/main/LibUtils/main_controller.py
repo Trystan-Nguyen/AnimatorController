@@ -1,21 +1,18 @@
 from .cam_controller import cam_controller
 from .body_tracking import body_tracking
+from .hand_tracking import hand_tracking
 
 import multiprocessing, json
 
 class blendshape_controller(object):
 	terminate_process_shm = None
 	controller_dict = {
-		'cam_controller_obj': None,
-		'body_tracking_obj': None
+		'cam_controller_obj': None
 	}
 	shm_dict = {
-		'cam': None,
-		'body': None
+		'cam': None
 	}
-	framenum_dict = {
-		'body': -1
-	}
+	framenum_dict = {}
 	
 
 	def __init__(self, cam_index=0):
@@ -32,17 +29,23 @@ class blendshape_controller(object):
 		self.controller_dict['body_tracking_obj'].run()
 		self.shm_dict['body'] = self.controller_dict['body_tracking_obj'].get_body_tracking()
 
-	'''
-		{
-			'Frame_Num':int,
-			'Landmarks':[[x, y, z, visibility, presence] x 33]
-		}
-	'''
+	def run_hand_tracking(self):
+		self.controller_dict['hand_tracking_obj'] = hand_tracking(self.terminate_process_shm, self.shm_dict['cam'])
+		self.controller_dict['hand_tracking_obj'].run()
+		self.shm_dict['hand'] = self.controller_dict['hand_tracking_obj'].get_hand_tracking()
+
+	# [[x,y,z,visibility,presence] x 33]
 	def get_body_detections(self):
 		if framenum_dict['body'] != self.shm_dict['body']['Frame_Num']:
 			framenum_dict['body'] = self.shm_dict['body']['Frame_Num']
 			return json.dumps(self.shm_dict['body']['Landmarks'])
 		return '[]'
+	# [L[[x,y,z] x 21], R[[x,y,z] x 21]]
+	def get_body_detections(self):
+		if framenum_dict['hand'] != self.shm_dict['hand']['Frame_Num']:
+			framenum_dict['hand'] = self.shm_dict['hand']['Frame_Num']
+			return json.dumps([self.shm_dict['hand']['Landmarks_Left'], self.shm_dict['hand']['Landmarks_Right']])
+		return '[[],[]]'
 
 	def terminate(self):
 		self.terminate_process_shm.value = 0
