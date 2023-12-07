@@ -1,7 +1,7 @@
-from .cam_controller import cam_controller
-from .body_tracking import body_tracking
-from .hand_tracking import hand_tracking
-from .face_tracking import face_tracking
+from LibUtils.cam_controller import cam_controller
+from LibUtils.body_tracking import body_tracking
+from LibUtils.hand_tracking import hand_tracking
+from LibUtils.face_tracking import face_tracking
 
 import multiprocessing, json
 
