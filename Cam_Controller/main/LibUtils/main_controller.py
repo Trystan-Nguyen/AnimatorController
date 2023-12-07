@@ -1,6 +1,7 @@
 from .cam_controller import cam_controller
 from .body_tracking import body_tracking
 from .hand_tracking import hand_tracking
+from .face_tracking import face_tracking
 
 import multiprocessing, json
 
@@ -34,6 +35,11 @@ class blendshape_controller(object):
 		self.controller_dict['hand_tracking_obj'].run()
 		self.shm_dict['hand'] = self.controller_dict['hand_tracking_obj'].get_hand_tracking()
 
+	def run_face_tracking(self):
+		self.controller_dict['face_tracking_obj'] = face_tracking(self.terminate_process_shm, self.shm_dict['cam'])
+		self.controller_dict['face_tracking_obj'].run()
+		self.shm_dict['face'] = self.controller_dict['hand_tracking_obj'].get_hand_tracking()
+
 	# [[x,y,z,visibility,presence] x 33]
 	def get_body_detections(self):
 		if framenum_dict['body'] != self.shm_dict['body']['Frame_Num']:
@@ -45,6 +51,12 @@ class blendshape_controller(object):
 		if framenum_dict['hand'] != self.shm_dict['hand']['Frame_Num']:
 			framenum_dict['hand'] = self.shm_dict['hand']['Frame_Num']
 			return json.dumps([self.shm_dict['hand']['Landmarks_Left'], self.shm_dict['hand']['Landmarks_Right']])
+		return '[[],[]]'
+	# [[[x,y,z]] x 478, [score x 52]]
+	def get_face_detections(self):
+		if framenum_dict['face'] != self.shm_dict['face']['Frame_Num']:
+			framenum_dict['face'] = self.shm_dict['face']['Frame_Num']
+			return json.dumps([self.shm_dict['face']['Landmarks'], self.shm_dict['face']['BlendShape']])
 		return '[[],[]]'
 
 	def terminate(self):

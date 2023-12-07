@@ -1,4 +1,4 @@
-from LibUtils import hand_tracking
+from LibUtils import face_tracking
 from LibUtils import cam_controller
 
 import multiprocessing
@@ -11,7 +11,7 @@ def main():
 
 	cam_obj.run()
 
-	tracker = hand_tracking.hand_tracking(term_cond, cam_obj.get_image_shm())
+	tracker = face_tracking.face_tracking(term_cond, cam_obj.get_image_shm())
 	tracker.run()
 
 	time.sleep(5)
