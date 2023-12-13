@@ -1,4 +1,4 @@
-import multiprocessing, pickle
+import multiprocessing, pickle, numpy, json
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
@@ -9,9 +9,7 @@ FaceLandmarkerOptions = mp.tasks.vision.FaceLandmarkerOptions
 FaceLandmarkerResult = mp.tasks.vision.FaceLandmarkerResult
 VisionRunningMode = mp.tasks.vision.RunningMode
 
-
-import pprint
-import traceback
+import pprint, traceback
 
 class face_tracking(object):
 	cam_shm = None
@@ -20,29 +18,34 @@ class face_tracking(object):
 	tracking = None
 	model_path = 'MediaPipeUtil/face_landmarker.task'
 
-	def __init__(self, terminate, cam):
+	def __init__(self, terminate, cam, manager):
 		self.cam_shm = cam
 		self.terminate_cond = terminate
 
-		manager = multiprocessing.Manager()
-		self.tracking = manager.dict()
-		self.tracking['Frame_Num'] = int(0)
-		self.tracking['Landmarks'] = [[float(0), float(0), float(0)] for i in range(478)]
-		self.tracking['BlendShape'] = [float(0) for i in range(52)]
+		self.landmarks = manager.list([manager.list([float(0), float(0), float(0)]) for i in range(478)])
+		self.trackers = manager.list([float(0) for i in range(52)])
 
 	def get_face_tracking(self):
-		return self.tracking
+		landmarks = [i[:] for i in self.landmarks]
+		blend = self.trackers[:]
+		return json.dumps([landmarks, blend])
 
 	def update_detection(self, result: FaceLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
-		if len(result.face_landmarks) > 0:
-			for i in range(len(result.face_landmarks[0])):
-				landmark = result.face_landmarks[0][i]
-				self.tracking['Landmarks'][i] = [landmark.x, landmark.y, landmark.z]
+		try:
+			if len(result.face_landmarks) > 0:
+				l = []
+				for i in range(len(result.face_landmarks[0])):
+					landmark = result.face_landmarks[0][i]
+					l.append([landmark.x, landmark.y, landmark.z])
+				self.landmarks[:] = l[:]
 
-			for i in result.face_blendshapes[0]:
-				self.tracking['BlendShape'][i.index] = i.score
+				scores = []
+				for i in result.face_blendshapes[0]:
+					scores.append(i.score)
+				self.trackers[:] = scores
+		except:
+			print(traceback.format_exc())
 
-			self.tracking['Frame_Num'] = timestamp_ms
 
 
 	def face_tracking_subprocess(self):

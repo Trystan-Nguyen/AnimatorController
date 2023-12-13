@@ -1,4 +1,4 @@
-import pickle, multiprocessing
+import pickle, multiprocessing, numpy, json
 
 import mediapipe as mp
 from mediapipe.tasks import python
@@ -10,6 +10,8 @@ PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 PoseLandmarkerResult = mp.tasks.vision.PoseLandmarkerResult
 VisionRunningMode = mp.tasks.vision.RunningMode
 
+import traceback, pprint
+
 class body_tracking(object):
 	cam_shm = None
 	terminate_cond = None
@@ -17,17 +19,14 @@ class body_tracking(object):
 	tracking = None
 	model_path = 'MediaPipeUtil/pose_landmarker_heavy.task'
 
-	def __init__(self, terminate, cam):
+	def __init__(self, terminate, cam, manager):
 		self.cam_shm = cam
 		self.terminate_cond = terminate
 
-		manager = multiprocessing.Manager()
-		self.tracking = manager.dict()
-		self.tracking['Frame_Num'] = int(0)
-		self.tracking['Landmarks'] = [[float(0), float(0), float(0), float(0), float(0)] for i in range(33)]
+		self.tracking = manager.list([manager.list([float(0), float(0), float(0), float(0), float(0)]) for i in range(33)])
 
 	def get_body_tracking(self):
-		return self.tracking
+		return json.dumps([i[:] for i in self.tracking])
 
 	def update_detection(self, result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
 		if len(result.pose_world_landmarks) == 0:
@@ -38,9 +37,8 @@ class body_tracking(object):
 		for i in range(len(result.pose_world_landmarks[0])):
 			l = result.pose_world_landmarks[0][i]
 			landmark_detections.append([l.x, l.y, l.z, l.visibility, l.presence])
-
-		self.tracking['Landmarks'] = landmark_detections
-		self.tracking['Frame_Num'] = timestamp_ms
+		
+		self.tracking[:] = landmark_detections
 
 	def body_tracking_subprocess(self):
 		options = PoseLandmarkerOptions(

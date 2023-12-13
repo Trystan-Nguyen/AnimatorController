@@ -1,8 +1,20 @@
-#from TestScripts.MultiCam_TestScript import main
-#from TestScripts.main_controller_testing import main
-#from TestScripts.body_tracking_testing import main
-from TestScripts.hand_tracking_testing import main
+from main_controller import blendshape_controller
+import cv2, numpy, pickle, time, pprint
 
+if __name__ == '__main__':
+	ctr = blendshape_controller(0)
 
-if __name__ == "__main__":
-    main()
+	#ctr.run_body_tracking()
+	ctr.run_face_tracking()
+	#ctr.run_hand_tracking()
+	input("Enter to print data")
+	#pprint.pprint(ctr.get_body_detections())
+	#print('\n\n\n---------------------------------------------------------------------\n\n\n')
+	#pprint.pprint(ctr.get_hand_detections())
+	#print('\n\n\n---------------------------------------------------------------------\n\n\n')
+	print(ctr.get_face_detections())
+	#print('\n\n\n---------------------------------------------------------------------\n\n\n')
+	
+	input("Enter to quit:")
+	print(ctr.get_face_detections())
+	ctr.terminate()

@@ -1,4 +1,4 @@
-import multiprocessing, pickle
+import multiprocessing, pickle, json
 import mediapipe as mp
 
 BaseOptions = mp.tasks.BaseOptions
@@ -7,8 +7,6 @@ HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
 HandLandmarkerResult = mp.tasks.vision.HandLandmarkerResult
 VisionRunningMode = mp.tasks.vision.RunningMode
 
-import pprint
-
 class hand_tracking(object):
 	cam_shm = None
 	terminate_cond = None
@@ -16,34 +14,44 @@ class hand_tracking(object):
 	tracking = None
 	model_path = 'MediaPipeUtil/hand_landmarker.task'
 
-	def __init__(self, terminate, cam):
+	def __init__(self, terminate, cam, manager):
 		self.cam_shm = cam
 		self.terminate_cond = terminate
 
-		manager = multiprocessing.Manager()
 		self.tracking = manager.dict()
-		self.tracking['Frame_Num'] = int(0)
-		self.tracking['Landmarks_Left'] = [[float(0), float(0), float(0)] for i in range(21)]
-		self.tracking['Landmarks_Right'] = [[float(0), float(0), float(0)] for i in range(21)]
+		self.tracking['SkipHands'] = manager.list([False, False])
+		self.tracking['Landmarks_Left'] = manager.list([manager.list([float(0), float(0), float(0)]) for i in range(21)])
+		self.tracking['Landmarks_Right'] = manager.list([manager.list([float(0), float(0), float(0)]) for i in range(21)])
+
 
 	def get_hand_tracking(self):
-		return self.tracking
+		ret = [[],[]]
+
+		if self.tracking['SkipHands'][0]:
+			ret[0] = [i[:] for i in self.tracking['Landmarks_Left']]
+		if self.tracking['SkipHands'][1]:
+			ret[1] = [i[:] for i in self.tracking['Landmarks_Right']]
+		return json.dumps(ret)
 
 	def update_detection(self, result: HandLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
 		if len(result.handedness) == 0:
 			return
 
-		for category in result.handedness:
-			index = category.index
+		invalidHands = ['Landmarks_Left', 'Landmarks_Right']
+		for i in range(len(result.handedness)):
+			category = result.handedness[i][0]
 			key = f'Landmarks_{category.category_name}'
+			invalidHands.remove(key)
 
 			detection = []
-			for landmark in hand_landmarks[index]:
-			#for landmark in hand_world_landmarks[index]:
+			for landmark in result.hand_landmarks[i]:
+			#for landmark in result.hand_world_landmarks[i]:
 				detection.append([landmark.x, landmark.y, landmark.z])
-
 			self.tracking[key] = detection
-		self.tracking['Frame_Num'] = timestamp_ms
+		
+		self.tracking['SkipHands'][0] = 'Landmarks_Left' not in invalidHands
+		self.tracking['SkipHands'][1] = 'Landmarks_Right' not in invalidHands
+
 
 	def hand_tracking_subprocess(self):
 		options = HandLandmarkerOptions(
