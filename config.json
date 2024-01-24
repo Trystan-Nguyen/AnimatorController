@@ -1,0 +1,14 @@
+{
+	"body" : {
+		"address" : "",
+		"size" : 4000
+	},
+	"hand" : {
+		"address" : "",
+		"size" : 3000
+	},
+	"face" : {
+		"address" : "",
+		"size" : 35000
+	}
+}
