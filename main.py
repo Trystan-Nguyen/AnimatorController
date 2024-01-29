@@ -1,31 +1,27 @@
 from main_controller import blendshape_controller
-import cv2, numpy, pickle, time, pprint
+import cv2, numpy, pickle, time, pprint, json, multiprocessing
+from multiprocessing import shared_memory
 
 if __name__ == '__main__':
-    ctr = blendshape_controller(0)
-
-    #ctr.run_body_tracking()
-    ctr.run_face_tracking()
-    #ctr.run_hand_tracking()
-
-    size = 0
-    try:
-        while True:
-            temp = ctr.get_face_detections()
-            size = max(size, len(temp))
-            print(f'{size}', end='\r')
-    except KeyboardInterrupt:
-        pass
-    print(f'Max Size: {size}')
-
-    #input("Enter to print data")
-    #pprint.pprint(ctr.get_body_detections())
-    #print('\n\n\n---------------------------------------------------------------------\n\n\n')
-    #pprint.pprint(ctr.get_hand_detections())
-    #print('\n\n\n---------------------------------------------------------------------\n\n\n')
-    #print(ctr.get_face_detections())
-    #print('\n\n\n---------------------------------------------------------------------\n\n\n')
-
-    input("Enter to quit:")
-    #print(ctr.get_face_detections())
+    config = None
+    with open('./config.json', 'r') as f:
+        config = json.loads(f.read())
+    shm = shared_memory.SharedMemory(
+    name=config['hand']['address'], size=config['hand']['size'], create=True)    
+    
+    ctr = blendshape_controller(cam_index=1)
+    ctr.run_hand_tracking()
+    
+    input('Enter to continue\n')
+    #print(shm.buf.tobytes())
+    
+    data = json.loads(bytearray(shm.buf[:]).decode().rstrip('\0x00'))
+    
+    input('Enter to continue\n')
+    data2 = json.loads(bytearray(shm.buf[:]).decode().rstrip('\0x00'))
+    
+    pprint.pprint(data)
+    print('---------------------------------------------------------')
+    pprint.pprint(data2)
+    
     ctr.terminate()

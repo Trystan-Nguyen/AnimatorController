@@ -1,14 +1,14 @@
 {
 	"body" : {
-		"address" : "",
+		"address" : "MediaPipe_body_shm",
 		"size" : 4000
 	},
 	"hand" : {
-		"address" : "",
+		"address" : "MediaPipe_hands_shm",
 		"size" : 3000
 	},
 	"face" : {
-		"address" : "",
+		"address" : "MediaPipe_face_shm",
 		"size" : 35000
 	}
 }
