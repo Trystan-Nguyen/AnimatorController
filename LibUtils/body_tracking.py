@@ -33,7 +33,7 @@ class body_tracking(object):
             l = result.pose_world_landmarks[0][i]
             landmark_detections.append([l.x, l.y, l.z, l.visibility, l.presence])
         
-        jsonify_ret = json.dumps(landmark_detections)
+        jsonify_ret = json.dumps(landmark_detections, separators=(',', ':'))
         byte_arr_ret = bytearray(self.tracking.size)
         byte_arr_ret[:len(jsonify_ret)] = bytearray(jsonify_ret, 'utf8')
         self.tracking.buf[:] = byte_arr_ret

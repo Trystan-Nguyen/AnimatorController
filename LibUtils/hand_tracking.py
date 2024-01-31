@@ -38,7 +38,7 @@ class hand_tracking(object):
                 detection.append([landmark.x, landmark.y, landmark.z])
             ret[key] = detection
 
-        jsonify_ret = json.dumps(ret)
+        jsonify_ret = json.dumps(ret, separators=(',', ':'))
         byte_arr_ret = bytearray(self.tracking.size)
         byte_arr_ret[:len(jsonify_ret)] = bytearray(jsonify_ret, 'utf8')
         self.tracking.buf[:] = byte_arr_ret

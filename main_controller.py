@@ -3,9 +3,9 @@ from LibUtils.body_tracking import body_tracking
 from LibUtils.hand_tracking import hand_tracking
 from LibUtils.face_tracking import face_tracking
 
-import multiprocessing, json
+import multiprocessing
 
-class blendshape_controller(object):
+class animator_lib(object):
     terminate_process_shm = None
     controller_dict = {
         'cam_controller_obj': None
@@ -13,14 +13,13 @@ class blendshape_controller(object):
     shm_cam = None
     shm_config = None
 
-    def __init__(self, cam_index=0, config_uri='./config.json'):
+    def __init__(self, config, cam_index=0):
         self.terminate_process_shm = multiprocessing.Value('i')
         self.terminate_process_shm.value = 1
 
         # Get shm config
-        with open(config_uri, 'r') as f:
-            self.shm_config = json.loads(f.read())
-            
+        self.shm_config = config
+        
         # Start Camera
         self.controller_dict['cam_controller_obj'] = cam_controller(self.terminate_process_shm, cam_index)
         self.controller_dict['cam_controller_obj'].run()

@@ -1,4 +1,4 @@
-import pickle, numpy, json
+import pickle, json
 from multiprocessing import shared_memory, Process
 
 import mediapipe as mp
@@ -40,7 +40,7 @@ class face_tracking(object):
                     scores.append(i.score)
                 #self.trackers[:] = scores
                 
-                jsonify_ret = json.dumps({'landmarks':l, 'blendshapes':scores})
+                jsonify_ret = json.dumps({'landmarks':l, 'blendshapes':scores}, separators=(',', ':'))
                 byte_arr_ret = bytearray(self.tracking.size)
                 byte_arr_ret[:len(jsonify_ret)] = bytearray(jsonify_ret, 'utf8')
                 self.tracking.buf[:] = byte_arr_ret

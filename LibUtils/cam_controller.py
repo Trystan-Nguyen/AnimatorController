@@ -1,6 +1,4 @@
-import cv2
-import pickle
-import multiprocessing
+import cv2, pickle, multiprocessing
 
 def update_image_process(camera_index, terminate_condition, shared_img, internal_run):
 	cap = cv2.VideoCapture(camera_index, cv2.CAP_DSHOW)

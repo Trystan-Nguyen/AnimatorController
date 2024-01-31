@@ -10,5 +10,9 @@
 	"face" : {
 		"address" : "MediaPipe_face_shm",
 		"size" : 35000
+	},
+	"terminateCond" : {
+		"address" : "Python_process_cond",
+		"size" : 1
 	}
 }
