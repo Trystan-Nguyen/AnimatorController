@@ -1,6 +1,6 @@
 from main_controller import animator_lib
 from multiprocessing import shared_memory
-import sys, time, json
+import sys, time, json, os
 
 HAND_CODE = 0b001
 BODY_CODE = 0b010
@@ -13,13 +13,17 @@ if __name__ == '__main__':
         print('Error: Expected camera_index, config_uri, code arguements')
         sys.exit()
     
-    args_camera_index = int(sys.argv[1])
-    args_config_uri = sys.argv[2]
-    args_code = int(sys.argv[3])
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
     
-    config = None
-    with open(args_config_uri, 'r') as f:
+    args_camera_index = int(sys.argv[1])
+    args_code = int(sys.argv[2])
+    args_config_str = sys.argv[3].replace('~~', '"')
+    
+    config = json.loads(args_config_str)
+    '''
+    with open('config.json', 'r') as f:
         config = json.loads(f.read())
+    '''
     
     controller_obj = animator_lib(config, cam_index=args_camera_index)
     if args_code & HAND_CODE != 0:
